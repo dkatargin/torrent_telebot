@@ -1,4 +1,5 @@
 import configparser
+import time
 import telegram
 from api import ApiFunc
 
@@ -28,4 +29,6 @@ class TeleBot:
 
 
 if __name__ == '__main__':
-    TeleBot().main_func()
+    while True:
+        TeleBot().main_func()
+        time.sleep(3)
