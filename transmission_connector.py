@@ -1,5 +1,6 @@
 import configparser
 import transmissionrpc
+from common.size_converter import SizeConverter
 
 
 class TransmissionCommands:
@@ -22,7 +23,12 @@ class TransmissionCommands:
             result_str += '_%s_\n*%s* \n\n' % (str(st['u_date']), st['name'])
         return result_str
 
+    def server_info(self):
+        size_is = "{0:.2S}".format(SizeConverter(int(self.tc.free_space('/mnt/Public'))))
+        result_str = 'Space available: %s' % size_is
+        return result_str
+
 if __name__ == '__main__':
-    mainfunc()
+    TransmissionCommands().server_info()
 
 
