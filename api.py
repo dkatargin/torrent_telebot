@@ -1,4 +1,5 @@
 from transmission_connector import TransmissionCommands
+from common import save_torrent
 import telegram
 
 
@@ -69,6 +70,7 @@ class ApiFunc:
             download_dir = getattr(TorrentState, 'download_dir')
             delattr(TorrentState, 'download_dir')
             delattr(TorrentState, 'add_torrent_state')
+            save_torrent.saver(options)
             TransmissionCommands().add_torrent(download_dir=torrent_dirs[download_dir], torrent_url=options)
             return 'Качаю!'
         else:

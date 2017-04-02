@@ -1,36 +1,28 @@
 import configparser
-import time
-import telegram
+from telegram import ParseMode
+from telegram.ext import Updater, Filters, MessageHandler
 from api import ApiFunc
 
+config = configparser.ConfigParser()
+config.read('config.cfg')
 
-class TeleBot:
-    def __init__(self):
-        config = configparser.ConfigParser()
-        config.read('config.cfg')
-        self.token = config['Telegram']['token']
-        self.admin_user_id = int(config['Telegram']['admin_id'])
-        self.bot = telegram.Bot(token=self.token)
 
-    def main_func(self):
-        for m in self.bot.getUpdates(timeout=10):
-            if m.message.document:
-                botfile = self.bot.getFile(m.message.document.file_id)
-                m.message.text = botfile.file_path
-            if m.message.from_user['id'] != self.admin_user_id:
-                continue
-            chat_id = m.message.chat_id
-            update_id = m.update_id
-            api_answ = ApiFunc(m.message.text)
-            self.bot.sendMessage(chat_id=chat_id, text=api_answ.answer,
-                           parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=api_answ.reply_markup)
-            self.confirm_updates(update_id)
-
-    def confirm_updates(self, update_id):
-        self.bot.getUpdates(offset=update_id+1, timeout=10)
+def tele_bot(bot, m):
+    if m.message.document:
+        botfile = bot.getFile(m.message.document.file_id)
+        m.message.text = botfile.file_path
+    if m.message.from_user['id'] != int(config['Telegram']['admin_id']):
+        return
+    chat_id = m.message.chat_id
+    api_answ = ApiFunc(m.message.text)
+    bot.sendMessage(chat_id=chat_id, text=api_answ.answer,
+                         parse_mode=ParseMode.MARKDOWN, reply_markup=api_answ.reply_markup)
 
 
 if __name__ == '__main__':
-    while True:
-        TeleBot().main_func()
-        time.sleep(10)
+    updater = Updater(config.get('Telegram', 'token'))
+
+    updater.dispatcher.add_handler(MessageHandler(Filters.all, tele_bot))
+
+    updater.start_polling()
+    updater.idle()

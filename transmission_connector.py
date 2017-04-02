@@ -16,7 +16,10 @@ class TransmissionCommands:
         for t in self.tc.get_torrents():
             updated_date = t.date_added
             if t.status == 'downloading':
-                status = "(закач. %s%s осталось %s)" % ("{0:.2f}".format(t.progress), '%', t.eta)
+                try:
+                    status = "(закач. %s%s осталось %s)" % ("{0:.2f}".format(t.progress), '%', t.eta)
+                except:
+                    status = str(t.progress)
             else:
                 status = ''
             tor_list.append({'name': t.name, 'u_date': updated_date, 'status': status, 'id': t.id})
