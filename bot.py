@@ -1,12 +1,18 @@
+import emoji
+import telegram
 from transmission_connector import TransmissionCommands
 from common import save_torrent
-import telegram
 
+# Buttons
+download_state = emoji.emojize(":traffic_light: Статус закачек", use_aliases=True)
+info = emoji.emojize(":information_source: Информация", use_aliases=True)
+add_torrent = emoji.emojize(":postbox: Добавить торрент", use_aliases=True)
+rm_torrent = emoji.emojize(":wastebasket: Удалить торрент", use_aliases=True)
 
-torrent_types = {b'\xf0\x9f\x8e\xb5\xd0\x9c\xd1\x83\xd0\xb7\xd1\x8b\xd0\xba\xd0\xb0': 'music',
-                 b'\xf0\x9f\x8e\xa6\xd0\xa4\xd0\xb8\xd0\xbb\xd1\x8c\xd0\xbc': 'movie',
-                 b'\xf0\x9f\x91\xaa\xd0\xa1\xd0\xb5\xd1\x80\xd0\xb8\xd0\xb0\xd0\xbb': 'serial',
-                 b'\xf0\x9f\x8e\x8e\xd0\x90\xd0\xbd\xd0\xb8\xd0\xbc\xd0\xb5': 'anime'}
+torrent_types = {emoji.emojize(":headphones: Музыка", use_aliases=True): 'music',
+                 emoji.emojize(":movie_camera: Фильм", use_aliases=True): 'movie',
+                 emoji.emojize(":popcorn: Сериал", use_aliases=True): 'serial',
+                 emoji.emojize(":sushi: Аниме", use_aliases=True): 'anime'}
 
 torrent_dirs = {
     'music': '/mnt/Public/Shared Music/',
@@ -22,11 +28,10 @@ class TorrentState:
 
 class ApiFunc:
     def __init__(self, cmd):
-        custom_keyboard = [[telegram.KeyboardButton(telegram.Emoji.NEWSPAPER + 'Статус закачек'),
-                            telegram.KeyboardButton(telegram.Emoji.INFORMATION_SOURCE + "Информация")],
-                           [telegram.KeyboardButton(telegram.Emoji.POSTBOX + "Добавить торрент")],
-                           [telegram.KeyboardButton(
-                               telegram.Emoji.BLACK_UNIVERSAL_RECYCLING_SYMBOL + "Удалить торрент")]
+        custom_keyboard = [[telegram.KeyboardButton(download_state),
+                            telegram.KeyboardButton(info)],
+                           [telegram.KeyboardButton(add_torrent)],
+                           [telegram.KeyboardButton(rm_torrent)]
                            ]
 
         self.reply_markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
@@ -39,18 +44,17 @@ class ApiFunc:
             self.answer = self.rm_torrent(state=torrent_rm_state, options=cmd)
             return
         cmds_dict = {
-            b'\xf0\x9f\x93\xb0\xd0\xa1\xd1\x82\xd0\xb0\xd1\x82\xd1\x83\xd1\x81 \xd0\xb7\xd0\xb0\xd0\xba\xd0\xb0\xd1\x87\xd0\xb5\xd0\xba': self.torrent_status,
-            b'\xf0\x9f\x93\xae\xd0\x94\xd0\xbe\xd0\xb1\xd0\xb0\xd0\xb2\xd0\xb8\xd1\x82\xd1\x8c \xd1\x82\xd0\xbe\xd1\x80\xd1\x80\xd0\xb5\xd0\xbd\xd1\x82': self.add_torrent,
-            b'\xe2\x99\xbb\xd0\xa3\xd0\xb4\xd0\xb0\xd0\xbb\xd0\xb8\xd1\x82\xd1\x8c \xd1\x82\xd0\xbe\xd1\x80\xd1\x80\xd0\xb5\xd0\xbd\xd1\x82': self.rm_torrent,
-            b'\xe2\x84\xb9\xd0\x98\xd0\xbd\xd1\x84\xd0\xbe\xd1\x80\xd0\xbc\xd0\xb0\xd1\x86\xd0\xb8\xd1\x8f': self.torrent_server_info,
+            download_state: self.torrent_status,
+            add_torrent: self.add_torrent,
+            rm_torrent: self.rm_torrent,
+            info: self.torrent_server_info,
         }
-        run = cmds_dict.get(cmd.encode('UTF-8'))
 
-        if run:
-            self.answer = run()
+        if cmds_dict.get(cmd, None):
+            func = cmds_dict.get(cmd)
+            self.answer = func()
         else:
             self.answer = 'Command unsupported'
-
 
     @staticmethod
     def torrent_status():
@@ -62,7 +66,7 @@ class ApiFunc:
 
     def add_torrent(self, state=None, options=None):
         if state == 'sel_dir':
-            seldir = torrent_types[options.encode('UTF-8')]
+            seldir = torrent_types[options]
             setattr(TorrentState, 'download_dir', seldir)
             setattr(TorrentState, 'add_torrent_state', 'sel_url')
             return 'Загрузите торрент-файл'
@@ -75,11 +79,11 @@ class ApiFunc:
             return 'Качаю!'
         else:
             setattr(TorrentState, 'add_torrent_state', 'sel_dir')
-            torrent_type = [[telegram.KeyboardButton(telegram.Emoji.MUSICAL_NOTE + 'Музыка'),
-                                  telegram.KeyboardButton(telegram.Emoji.CINEMA + "Фильм")],
-                            [telegram.KeyboardButton(telegram.Emoji.FAMILY + "Сериал"),
-                             telegram.KeyboardButton(telegram.Emoji.JAPANESE_DOLLS + "Аниме")
-                                  ]]
+            torrent_type = [[telegram.KeyboardButton(emoji.emojize(":headphones: Музыка", use_aliases=True)),
+                             telegram.KeyboardButton(emoji.emojize(":movie_camera: Фильм", use_aliases=True))],
+                            [telegram.KeyboardButton(emoji.emojize(":popcorn: Сериал", use_aliases=True)),
+                             telegram.KeyboardButton(emoji.emojize(":sushi: Аниме", use_aliases=True))
+                             ]]
             self.reply_markup = telegram.ReplyKeyboardMarkup(torrent_type)
             return 'Выберите тип торрента'
 
@@ -91,6 +95,7 @@ class ApiFunc:
             return 'Удалён!'
         else:
             setattr(TorrentState, 'rm_torrent_state', 'rm')
-            rm_type = [["%i_%s" % (i['id'], i['name'])] for i in TransmissionCommands().torrents_list(non_formated=True)]
+            rm_type = [["%i_%s" % (i['id'], i['name'])] for i in
+                       TransmissionCommands().torrents_list(non_formated=True)]
             self.reply_markup = telegram.ReplyKeyboardMarkup(rm_type)
             return 'Выберите торрент для удаления'
