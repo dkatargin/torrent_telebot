@@ -21,7 +21,8 @@ def tele_bot(bot, m):
 
 if __name__ == '__main__':
     updater = Updater(config.get('Telegram', 'token'),
-                      request_kwargs={'proxy_url': config.get('Proxy', 'address'),
+                      request_kwargs={'proxy_url': 'socks5://%s:%s/' % (config.get('Proxy', 'host'),
+                                                                        config.get('Proxy', 'port')),
                                       'urllib3_proxy_kwargs': {'username': config.get('Proxy', 'username'),
                                                                'password': config.get('Proxy', 'password')}}
                       )

@@ -31,7 +31,8 @@ WantedBy=multi-user.target
 
 ```
 [Proxy]
-address = socks5://<proxyadddr>:1080/
+host = <proxyadddr>
+port = 1080
 username = <proxy user>
 password = <proxy password>
 ```
