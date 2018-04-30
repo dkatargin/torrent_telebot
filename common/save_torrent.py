@@ -1,24 +1,21 @@
 import configparser
 import os
-import socket
-import socks
-from urllib.request import urlopen
+from urllib3.contrib.socks import SOCKSProxyManager
 
 config = configparser.ConfigParser()
 config.read(os.path.join(os.path.dirname(__file__), '..', 'config.cfg'))
 
 
 def saver(url):
-    default_socket = socket.socket
-    socks.set_default_proxy(socks.SOCKS5, addr=config.get('Proxy', 'host'), port=config.get('Proxy', 'port'),
-                            username=config.get('Proxy', 'username'),
-                            password=config.get('Proxy', 'password'))
-    socket.socket = socks.socksocket
-
-    tordata = urlopen(url)
+    mgr = SOCKSProxyManager('socks5://%s:%s/' % (config.get('Proxy', 'host'),
+                                                 config.get('Proxy', 'port')),
+                            **{'username': config.get('Proxy', 'username'),
+                               'password': config.get('Proxy', 'password')}
+                            )
+    tordata = mgr.request('GET', url, headers={'connection': 'keep-alive'})
     out_dir = config.get('Torrent', 'save_dir')
     with open(os.path.join(out_dir, os.path.basename(url)), 'wb') as torfile:
-        torfile.write(tordata.read())
+        torfile.write(tordata.data)
 
 
 if __name__ == '__main__':
