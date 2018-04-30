@@ -1,2 +1,4 @@
 transmissionrpc==0.11
-python-telegram-bot==4.0.3
+python-telegram-bot==10.0.2
+emoji==0.5.0
+PySocks

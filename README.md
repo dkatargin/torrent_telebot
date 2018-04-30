@@ -4,6 +4,7 @@
 - запрашивать список торрентов;
 - добавлять торренты;
 - загружать торренты в определенные каталоги;
+- работать через socks-прокси
 
 ## Пример интеграции с systemd
 ```systemd
@@ -24,4 +25,14 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
+```
+
+## Включение proxy
+
+```
+[Proxy]
+host = <proxyadddr>
+port = 1080
+username = <proxy user>
+password = <proxy password>
 ```
