@@ -12,10 +12,11 @@ def saver(url):
                             **{'username': config.get('Proxy', 'username'),
                                'password': config.get('Proxy', 'password')}
                             )
-    tordata = mgr.request('GET', url, headers={'connection': 'keep-alive'})
+    tordata = mgr.request('GET', url, headers={'connection': 'keep-alive'}).data
     out_dir = config.get('Torrent', 'save_dir')
     with open(os.path.join(out_dir, os.path.basename(url)), 'wb') as torfile:
-        torfile.write(tordata.data)
+        torfile.write(tordata)
+    return tordata
 
 
 if __name__ == '__main__':

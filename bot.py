@@ -1,3 +1,4 @@
+import base64
 import emoji
 import telegram
 from transmission_connector import TransmissionCommands
@@ -74,8 +75,8 @@ class ApiFunc:
             download_dir = getattr(TorrentState, 'download_dir')
             delattr(TorrentState, 'download_dir')
             delattr(TorrentState, 'add_torrent_state')
-            save_torrent.saver(options)
-            TransmissionCommands().add_torrent(download_dir=torrent_dirs[download_dir], torrent_url=options)
+            torrent_data = base64.b64encode(save_torrent.saver(options)).decode('UTF-8')
+            TransmissionCommands().add_torrent(download_dir=torrent_dirs[download_dir], torrent=torrent_data)
             return 'Качаю!'
         else:
             setattr(TorrentState, 'add_torrent_state', 'sel_dir')

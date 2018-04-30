@@ -36,8 +36,8 @@ class TransmissionCommands:
         result_str = 'Space available: %s' % size_is
         return result_str
 
-    def add_torrent(self, download_dir, torrent_url):
-        result = self.tc.add_torrent(torrent=torrent_url, download_dir=download_dir)
+    def add_torrent(self, download_dir, torrent):
+        result = self.tc.add_torrent(torrent=torrent, download_dir=download_dir)
         return result
 
     def rm_torrent(self, torrent_name):
