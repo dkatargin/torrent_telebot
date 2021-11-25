@@ -1,5 +1,5 @@
 import configparser
-import transmissionrpc
+import transmission_rpc
 from common.size_converter import SizeConverter
 
 
@@ -7,13 +7,18 @@ class TransmissionCommands:
     def __init__(self):
         config = configparser.ConfigParser()
         config.read('config.cfg')
-        self.tc = transmissionrpc.Client(address=config['TransmissionRPC']['server'],
-                                         user=config['TransmissionRPC']['user'],
-                                         password=config['TransmissionRPC']['password'])
+        self.tc = transmission_rpc.Client(host=config['TransmissionRPC']['server'],
+                                          port=config['TransmissionRPC']['port'],
+                                          username=config['TransmissionRPC']['user'],
+                                          password=config['TransmissionRPC']['password'])
+        self.download_dir = config['Torrent']['save_dir']
 
     def torrents_list(self, non_formated=False):
+        torrents = self.tc.get_torrents()
+        if not torrents:
+            return '_No torrents found_'
         tor_list = []
-        for t in self.tc.get_torrents():
+        for t in torrents:
             updated_date = t.date_added
             if t.status == 'downloading':
                 try:
@@ -32,12 +37,12 @@ class TransmissionCommands:
         return result_str
 
     def server_info(self):
-        size_is = "{0:.2S}".format(SizeConverter(int(self.tc.free_space('/mnt/Public'))))
+        size_is = "{0:.2S}".format(SizeConverter(int(self.tc.free_space(self.download_dir))))
         result_str = 'Space available: %s' % size_is
         return result_str
 
     def add_torrent(self, download_dir, torrent):
-        result = self.tc.add_torrent(torrent=torrent, download_dir=download_dir)
+        result = self.tc.add_torrent(torrent, download_dir=download_dir)
         return result
 
     def rm_torrent(self, torrent_name):
